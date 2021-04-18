@@ -16,7 +16,7 @@ Przykładowy słownik:<br>
 "title": "Horizon temperature on the real line",<br>
 "link_to_article": "https://inspirehep.net/literature/1670639",<br>
 "authors": ["Michele Arzano","Jerzy Kowalski-Glikman"],<br>
-"link_to_authors": ["https://inspirehep.net/authors/1034076","-"],<br>
+"link_to_authors": ["https://inspirehep.net/authors/1034076", "-"],<br>
 "date" : "27-08-2018"<br>
 }<br>
 - trzecia osoba (z_name) na podstawie otrzymanych zparsowanych danych generuje plik html lub printuje to wszystko do konsoli (zależnie od parametru -o).<br>
