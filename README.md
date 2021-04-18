@@ -20,5 +20,5 @@ Przykładowy słownik:<br>
 "date" : "27-08-2018"<br>
 }<br>
 - trzecia osoba (z_name) na podstawie otrzymanych zparsowanych danych generuje plik html lub printuje to wszystko do konsoli (zależnie od parametru -o).<br>
-	Przykład:
+	Przykład:<br>
 	<img src="https://raw.githubusercontent.com/ppknUWr/preprints-and-publications-inspirehep/main/example_html.png">
