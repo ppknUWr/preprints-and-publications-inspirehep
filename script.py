@@ -13,25 +13,28 @@ parser.add_argument("-o", "--output", dest="o", type=str, default="site.html",
 parser.add_argument("-s", "--size", dest="s", type=int,
                     help="Give number of publications, default it takes all of them.")
 parser.add_argument("-y", "--year", dest="y", type=str,
-                    help="Enter the year. E.g --2019 means all years to 2019, 2019--2019 means this one year, 2019-- means 2019 and upper")
+                    help="Enter the year. E.g --2019 means all years to 2019, 2019--2019 or 2019 means this one year, 2019-- means 2019 and upper")
 
 args = parser.parse_args()                  # rozbicie
 file = args.o                               # nazwa pliku do jakiego trafi
-name = 'a%20' + args.a.replace(' ', '%20')  # dest=a, zamienia spacje na odpowiednie znaki
-if args.y == None:
-    date = ""
-else:
-    date = '&earliest_date=' + args.y
 
-# pobranie by poznac dlugosc
+if args.a[-4:] == ".txt":
+    with open(args.a, "r") as f:
+        args.a = " or ".join(f.read().splitlines())
+name = 'a%20' + args.a.replace(' ', '%20')  # dest=a, zamienia spacje na odpowiednie znaki
+
+inspirehep_profile = 'https://inspirehep.net/api/literature?sort=mostrecent&q=' + name
+if args.y != None:                                      # data
+    if len(args.y) == 4:
+        args.y = args.y + "--" + args.y
+    inspirehep_profile += '&earliest_date=' + args.y
+
 size = args.s
-if size == None:
-    inspirehep_profile = 'https://inspirehep.net/api/literature?q=' + name + date + '&format=json'
-    data = json.loads(urllib.request.urlopen(inspirehep_profile).read())
+if size == None:                                        # pobranie by poznac dlugosc
+    data = json.loads(urllib.request.urlopen(inspirehep_profile + '&format=json').read())
     size = data['hits']['total']
 
-# pobranie wlasciwe
-inspirehep_profile = 'https://inspirehep.net/api/literature?q=' + name + "%20and%20d%202019&size=" + str(size) + '&format=json '
+inspirehep_profile += "&size=" + str(size) + '&format=json '                        # pobranie wlasciwe
 data = json.loads(urllib.request.urlopen(inspirehep_profile).read())
 
 # tablice na dane
