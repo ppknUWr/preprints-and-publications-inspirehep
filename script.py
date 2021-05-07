@@ -16,15 +16,15 @@ parser.add_argument("-y", "--year", dest="y", type=str,
                     help="Enter the year. E.g --2019 means all years to 2019, 2019--2019 means this one year, 2019-- means 2019 and upper")
 
 args = parser.parse_args()
+file = args.o
 name = 'a%20' + args.a.replace(' ', '%20')
 if args.y == None:
     date = ""
 else:
     date = '&earliest_date=' + args.y
-file = args.o
+
 size = args.s
 if size == None:
-#data i size jeszcze
     inspirehep_profile = 'https://inspirehep.net/api/literature?q=' + name + date + '&format=json'
     data = json.loads(urllib.request.urlopen(inspirehep_profile).read())
     size = data['hits']['total']
@@ -61,14 +61,21 @@ for i in range(len(titles)):
     b_title.append(a_title)
     p_authors = ET.Element('p')
     for j in range(len(links_to_authors[i])):
+        if j == 0:
+            p_authors.text = "By "
         if(links_to_authors[i][j] != "-"):
-            a_authors = ET.Element('a', attrib={'href': "".join(links_to_authors[i][j].split("/api"))})
-            a_authors.text = authors[i][j]
+            a_authors = ET.Element('a', attrib={'href': "".join(links_to_authors[i][j].split("/api"))}) 
+            if j == len(links_to_authors[i]) - 1:
+                # zrobic zeby kropki i przeciniki byly w p a nie a 
+                a_authors.text = authors[i][j] + "."
+            else:
+                a_authors.text = authors[i][j]+", "
             p_authors.append(a_authors)
         else:
-            p_out_authors = ET.Element('p')
-            p_out_authors.text = authors[i][j]
-            p_authors.append(p_out_authors)
+            if j == len(links_to_authors[i]) - 1:
+                span_out_authors = ET.Element('span')
+                span_out_authors.text = authors[i][j] +", "
+                p_authors.append(span_out_authors)
     div.append(p_authors)
     container.append(div)
 ET.ElementTree(container).write(file, method='html')
