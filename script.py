@@ -41,13 +41,13 @@ def get_data(authors, size=None, year=None):
 
 def parse_data(json_data):
     articles = []
-    article = {}
     for hit in json_data['hits']['hits']:
-        article.clear()
+        article = {}
         article['title'] = hit['metadata']['titles'][0]['title']
+        article['date'] = hit['metadata']['earliest_date']
         article['link_to_article'] = 'https://inspirehep.net/literature/' + str(hit['metadata']['control_number'])
-        authors_hit = []
-        links_to_authors_hit = []
+        authors_hit = []                    # tablica autorow
+        links_to_authors_hit = []           # tablica linkow autorow
         for author in hit['metadata']['authors']:  # autorow wiecej niz 1 dla publikacji
             authors_hit.append(author['first_name'] + ' ' + author['last_name'])
             if 'record' not in author:
@@ -68,11 +68,13 @@ def to_html(articles, output_file):
         b_title = ET.Element('b')
         a_title = ET.Element('a', attrib={'href': article['link_to_article']})
         p_authors = ET.Element('p')
+        span_date = ET.Element('span')
 
         div.append(p_title)  # dodaj tytul publikacji
         p_title.append(b_title)  # dodaj pogrubienie
         a_title.text = article['title']  # dodaj link do publikaji
         b_title.append(a_title)  # dodaj link do do znacznika b
+        span_date.text = article['date']
 
         for i in range(len(article['links_to_authors'])):
             if i == 0:
@@ -80,7 +82,6 @@ def to_html(articles, output_file):
             if article['links_to_authors'][i] != "-":
                 a_authors = ET.Element('a', attrib={'href': "".join(article['links_to_authors'][i].split("/api"))})
                 if i == len(article['links_to_authors'][i]) - 1:
-                    # zrobic zeby kropki i przeciniki byly w p a nie a
                     a_authors.text = article['authors'][i] + "."
                 else:
                     a_authors.text = article['authors'][i] + ", "
@@ -90,7 +91,9 @@ def to_html(articles, output_file):
                     span_out_authors = ET.Element('span')
                     span_out_authors.text = article['authors'][i] + ", "
                     p_authors.append(span_out_authors)
+
         div.append(p_authors)
+        div.append(span_date)
         container.append(div)
     ET.ElementTree(container).write(output_file, method='html')
 
