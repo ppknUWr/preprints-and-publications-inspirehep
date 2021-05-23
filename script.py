@@ -46,6 +46,9 @@ def parse_data(json_data):
         article['title'] = hit['metadata']['titles'][0]['title']
         article['date'] = hit['metadata']['earliest_date']
         article['link_to_article'] = 'https://inspirehep.net/literature/' + str(hit['metadata']['control_number'])
+        if "arxiv_eprints" in hit['metadata'].keys():
+            article['primary_arxiv_category'] = hit['metadata']['arxiv_eprints'][0]['categories'][0]
+            article['arxiv_eprints'] = hit['metadata']['arxiv_eprints'][0]['value']
         authors_hit = []                    # tablica autorow
         links_to_authors_hit = []           # tablica linkow autorow
         for author in hit['metadata']['authors']:  # autorow wiecej niz 1 dla publikacji
@@ -69,13 +72,16 @@ def to_html(articles, output_file):
         a_title = ET.Element('a', attrib={'href': article['link_to_article']})
         p_authors = ET.Element('p')
         span_date = ET.Element('span')
-
+        span_arxiv = ET.Element('span')
         div.append(p_title)  # dodaj tytul publikacji
         p_title.append(b_title)  # dodaj pogrubienie
         a_title.text = article['title']  # dodaj link do publikaji
         b_title.append(a_title)  # dodaj link do do znacznika b
-        span_date.text = article['date']
-
+        span_date.text = " ("+article['date']+")"
+        if 'primary_arxiv_category' in article.keys() :
+            span_arxiv.text = "e-Print: " + article['arxiv_eprints'] + " [" + article['primary_arxiv_category'] + "]"
+        else:
+            span_arxiv.text = ""
         for i in range(len(article['links_to_authors'])):
             if i == 0:
                 p_authors.text = "By "
@@ -93,6 +99,7 @@ def to_html(articles, output_file):
                     p_authors.append(span_out_authors)
 
         div.append(p_authors)
+        div.append(span_arxiv)
         div.append(span_date)
         container.append(div)
     ET.ElementTree(container).write(output_file, method='html')
