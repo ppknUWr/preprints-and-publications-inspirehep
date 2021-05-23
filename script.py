@@ -3,6 +3,7 @@ from xml.etree import ElementTree as ET
 import urllib.request
 import json
 
+
 def get_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--author", dest="authors", required=True,
@@ -16,6 +17,7 @@ def get_arguments():
                         help="Enter the year. E.g --2019 means all years to 2019, 2019--2019 or 2019 means this one year, 2019-- means 2019 and upper")
     return parser.parse_args()
 
+
 def get_data(authors, size=None, year=None):
     if authors[-4:] == ".txt":
         with open(authors, "r") as f:
@@ -23,12 +25,12 @@ def get_data(authors, size=None, year=None):
     name = 'a%20' + authors.replace(' ', '%20')  # dest=a, zamienia spacje na odpowiednie znaki
 
     inspirehep_profile = 'https://inspirehep.net/api/literature?sort=mostrecent&q=' + name
-    if year != None:  # data
+    if year is not None:  # data
         if len(year) == 4:
             year = year + "--" + year
         inspirehep_profile += '&earliest_date=' + year
 
-    if size == None:  # pobranie by poznac dlugosc
+    if size is None:  # pobranie by poznac dlugosc
         data = json.loads(urllib.request.urlopen(inspirehep_profile + '&format=json').read())
         size = data['hits']['total']
 
@@ -38,16 +40,10 @@ def get_data(authors, size=None, year=None):
 
 
 def parse_data(json_data):
-    # tablice na dane
-    titles = []
-    links_to_articles = []
-    authors = []  # tablica tablic autorow
-    links_to_authors = []  # tablica tablic linkow autorow
-
     articles = []
     article = {}
     for hit in json_data['hits']['hits']:
-        article = {}
+        article.clear()
         article['title'] = hit['metadata']['titles'][0]['title']
         article['link_to_article'] = 'https://inspirehep.net/literature/' + str(hit['metadata']['control_number'])
         authors_hit = []
@@ -101,6 +97,6 @@ def to_html(articles, output_file):
 
 if __name__ == '__main__':
     args = get_arguments()  # pobranie argumentow
-    unparsed_data = get_data(args.authors, args.size, args.year) #pobranie danych z api
-    parsed_data = parse_data(unparsed_data) # parsowanie danych z api
-    to_html(parsed_data, args.output) # export do html
+    unparsed_data = get_data(args.authors, args.size, args.year)  # pobranie danych z api
+    parsed_data = parse_data(unparsed_data)  # parsowanie danych z api
+    to_html(parsed_data, args.output)  # export do html
