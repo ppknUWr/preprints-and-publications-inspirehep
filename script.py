@@ -59,7 +59,7 @@ def parse_data(json_data):
                 links_to_authors_hit.append(author['record']['$ref'])
         article['authors'] = authors_hit
         article['links_to_authors'] = links_to_authors_hit
-        if "publication_info" in hit['metadata'].keys():
+        if 'publication_info' in hit['metadata'].keys()  and  "journal_title" in hit['metadata']['publication_info'][0].keys(): # Dodanie na szybko sprawdzenia, czy zawiera "journal_title"
             pub_info = hit['metadata']['publication_info'][0]
             article['publication_info'] = "Published in: " + pub_info['journal_title'] + " " + pub_info['journal_volume'] + " (" + str(pub_info['year']) + ") • " #+ pub_info['artid'] # do naprawienia artid 
         articles.append(article)
@@ -118,6 +118,6 @@ def to_html(articles, output_file):
 
 if __name__ == '__main__':
     args = get_arguments()  # pobranie argumentow
-    unparsed_data = get_data(args.authors, args.size, args.year)  # pobranie danych z api
+    unparsed_data = get_data(args.authors, args.size, args.year)  # pobranie danych z api-s
     parsed_data = parse_data(unparsed_data)  # parsowanie danych z api
     to_html(parsed_data, args.output)  # export do html
