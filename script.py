@@ -2,6 +2,14 @@ import argparse
 from xml.etree import ElementTree as ET
 import urllib.request
 import json
+import unicodedata
+
+
+def remove_accents(input_str):
+    """Do obsłużenia znaków diakrytycznych w podanych autorach, ponieważ api obsluguje tylko format znaków ASCII."""
+    nfkd_form = unicodedata.normalize('NFKD', input_str)
+    only_ascii = nfkd_form.encode('ASCII', 'ignore')
+    return only_ascii.decode('utf-8')
 
 
 def get_arguments():
@@ -22,11 +30,12 @@ def get_data(authors, size=None, year=None):
     if authors[-4:] == ".txt":
         with open(authors, "r") as f:
             authors = " or ".join(f.read().splitlines())
+    authors = remove_accents(authors) # Dodane w celu obsluzenia znakow diaktrycznych np. "ę" zamieni na "e" itp.
     name = 'a%20' + authors.replace(' ', '%20')  # dest=a, zamienia spacje na odpowiednie znaki
 
     inspirehep_profile = 'https://inspirehep.net/api/literature?sort=mostrecent&q=' + name
     if year is not None:  # data
-        if len(year) == 4:
+        if '--' not in year:
             year = year + "--" + year
         inspirehep_profile += '&earliest_date=' + year
 
@@ -35,6 +44,7 @@ def get_data(authors, size=None, year=None):
         size = data['hits']['total']
 
     inspirehep_profile += "&size=" + str(size) + '&format=json '  # pobranie wlasciwe
+    print(inspirehep_profile) # debug
     data = json.loads(urllib.request.urlopen(inspirehep_profile).read())
     return data
 
@@ -49,8 +59,8 @@ def parse_data(json_data):
         if "arxiv_eprints" in hit['metadata'].keys():
             article['primary_arxiv_category'] = hit['metadata']['arxiv_eprints'][0]['categories'][0]
             article['arxiv_eprints'] = hit['metadata']['arxiv_eprints'][0]['value']
-        authors_hit = []                    # tablica autorow
-        links_to_authors_hit = []           # tablica linkow autorow
+        authors_hit = []  # tablica autorow
+        links_to_authors_hit = []  # tablica linkow autorow
         for author in hit['metadata']['authors']:  # autorow wiecej niz 1 dla publikacji
             authors_hit.append(author['first_name'] + ' ' + author['last_name'])
             if 'record' not in author:
@@ -59,9 +69,11 @@ def parse_data(json_data):
                 links_to_authors_hit.append(author['record']['$ref'])
         article['authors'] = authors_hit
         article['links_to_authors'] = links_to_authors_hit
-        if 'publication_info' in hit['metadata'].keys()  and  "journal_title" in hit['metadata']['publication_info'][0].keys(): # Dodanie na szybko sprawdzenia, czy zawiera "journal_title"
+        if 'publication_info' in hit['metadata'].keys() and "journal_title" in hit['metadata']['publication_info'][
+            0].keys():  # Dodanie na szybko sprawdzenia, czy zawiera "journal_title"
             pub_info = hit['metadata']['publication_info'][0]
-            article['publication_info'] = "Published in: " + pub_info['journal_title'] + " " + pub_info['journal_volume'] + " (" + str(pub_info['year']) + ") • " #+ pub_info['artid'] # do naprawienia artid 
+            article['publication_info'] = "Published in: " + pub_info['journal_title'] + " " + pub_info[
+                'journal_volume'] + " (" + str(pub_info['year']) + ") • "  # + pub_info['artid'] # do naprawienia artid
         articles.append(article)
     return articles
 
@@ -78,17 +90,17 @@ def to_html(articles, output_file):
         span_arxiv = ET.Element('span')
         span_pub_info = ET.Element('span')
 
-        span_comma = ET.Element('span') #dodawanie elementu z przecinkiem
+        span_comma = ET.Element('span')  # dodawanie elementu z przecinkiem
         span_comma.text = ", "
 
         div.append(p_title)  # dodaj tytul publikacji
         p_title.append(b_title)  # dodaj pogrubienie
         a_title.text = article['title']  # dodaj link do publikacji
         b_title.append(a_title)  # dodaj link do do znacznika b
-        span_date.text = " ("+article['date']+")"
-        if 'publication_info' in article.keys() :
+        span_date.text = " (" + article['date'] + ")"
+        if 'publication_info' in article.keys():
             span_pub_info.text = article['publication_info']
-        if 'primary_arxiv_category' in article.keys() :
+        if 'primary_arxiv_category' in article.keys():
             span_arxiv.text = "e-Print: " + article['arxiv_eprints'] + " [" + article['primary_arxiv_category'] + "]"
         else:
             span_arxiv.text = ""
@@ -107,7 +119,7 @@ def to_html(articles, output_file):
                 p_authors.append(span_out_authors)
                 if i != len(article['links_to_authors']) - 1:
                     p_authors.append(span_comma)
-                    
+
         p_authors.append(span_date)
         div.append(p_authors)
         div.append(span_pub_info)
