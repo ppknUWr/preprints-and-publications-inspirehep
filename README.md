@@ -1,9 +1,21 @@
 # preprints-and-publications-inspirehep
+## Opis:
+Skrypt pozwala generować raporty na temat ostatnich prac/ artykułów naukowych wskazanej osoby lub osób i eksportować do plików HTML, które z łatwością mogą zostać załączone do strony wydziału albo instytutu.
+W tym celu wykorzystujemy składnie:<br>
+
+	python script.py -a "Remigiusz Durka or Maciej Matyka" -s 10 -o site.html
+	python script.py --authors authors.txt -y "2020-2019"
+	
+	Parametry:
+	[-a,--authors] - string taki jak w przykładzie lub plik w formacie txt.
+	[-y, --year] - zawężenie danych do konkretnego roku lub przedziału lat.
+	[-s, --size] - ilość preprintów/publikacji do zwrócenia.
+	[-o,--output] - użytkownik podaje nazwe pliku html (np. "site.html") lub ścieżke (np."/home/usr/site.html).
 
 ## Podział prac:
 - pierwsza osoba (x_name) zajmie się pobraniem danych od użytkownika np:<br>
 	python script.py -a "Remigiusz Durka or Maciej Matyka" -o site.html<br>
-	python script.py --authors authors.txt -y "2020 or 2019"<br>
+	python script.py --authors authors.txt -y "2018-2020"<br>
 
 	[-a,--authors] - string taki jak w przykładzie lub plik w formacie txt.<br>
 	[-y, --year] - użytkownik podaje konkretny rok, lata lub przedział czasowy używając przy tym operatorów logicznych(<, <=, >, >=, or). Jest to argument niewymagany, więc 	jeśli użytkownik go nie użyje to domyślnie zwróci całą historie. (Najlepiej żeby ta osoba pracowała sciśle z osobą drugą nad tą rzeczą.) <br>
